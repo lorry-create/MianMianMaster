@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { isLoggedIn as checkTokenExists } from "@/utils/auth";
 
@@ -115,7 +115,9 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: import.meta.env.BASE_URL === "/"
+    ? createWebHistory()
+    : createWebHashHistory(import.meta.env.BASE_URL),
   routes,
 });
 
