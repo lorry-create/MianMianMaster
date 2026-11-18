@@ -16,27 +16,31 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: MianMianMaster-main
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: frontend-demo
           persist-credentials: false
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
           cache: npm
+          cache-dependency-path: MianMianMaster-main/package-lock.json
       - uses: actions/configure-pages@v5
         id: pages
       - run: npm ci
-      - name: Build static frontend
+      - name: Build the public frontend demo
         env:
-          VITE_FRONTEND_PREVIEW: "true"
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
-        run: npm exec -- vite build --base="${PAGES_BASE_PATH}/"
+        run: npm run build -- --base="${PAGES_BASE_PATH}/"
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: MianMianMaster-main/dist
       - uses: actions/deploy-pages@v4
         id: deployment
