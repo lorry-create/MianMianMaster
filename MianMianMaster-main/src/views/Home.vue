@@ -21,31 +21,13 @@ import {
   Smartphone,
   UserCheck,
   HelpCircle,
-  QrCode,
-  LogOut,
-  User
+  QrCode
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const isScrolled = ref(false)
 const isMobileMenuOpen = ref(false)
 const activeSection = ref('hero')
-
-// 登录与用户状态
-const isLoggedIn = ref(false)
-const showLoginModal = ref(false)
-const showUserMenu = ref(false)
-
-const handleLogin = () => {
-  // 模拟登录
-  isLoggedIn.value = true
-  showLoginModal.value = false
-}
-
-const handleLogout = () => {
-  isLoggedIn.value = false
-  showUserMenu.value = false
-}
 
 // 页脚官方渠道数据
 const footerChannels = [
@@ -281,35 +263,8 @@ const toggleFaq = (index: number) => {
           <span class="text-sm font-bold group-hover:text-[#FFC585] transition-colors">帮助中心</span>
         </div>
 
-        <!-- 登录/注册 或 用户头像 -->
-        <div v-if="!isLoggedIn" @click="showLoginModal = true" class="cursor-pointer group" style="color: #333;">
-          <span class="text-sm font-bold group-hover:text-[#FFC585] transition-colors">登录/注册</span>
-        </div>
-
-        <div v-else class="relative">
-          <div 
-            @click="showUserMenu = !showUserMenu"
-            class="w-10 h-10 rounded-full border-2 border-primary/10 bg-neutral-bg overflow-hidden cursor-pointer hover:border-primary/30 transition-all"
-          >
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user123" alt="User Avatar" />
-          </div>
-          <!-- 用户下拉菜单 -->
-          <Transition name="fade">
-            <div v-if="showUserMenu" class="absolute top-12 right-0 w-48 bg-white rounded-2xl shadow-2xl border border-neutral-border/30 p-2 z-[110]">
-              <div @click="navigateTo('/profile')" class="flex items-center gap-3 px-4 py-3 hover:bg-neutral-bg rounded-xl cursor-pointer transition-colors group">
-                <User :size="18" class="text-neutral-helper group-hover:text-primary" />
-                <span class="text-sm font-bold text-neutral-title">个人中心</span>
-              </div>
-              <div @click="handleLogout" class="flex items-center gap-3 px-4 py-3 hover:bg-red-50 rounded-xl cursor-pointer transition-colors group">
-                <LogOut :size="18" class="text-neutral-helper group-hover:text-red-500" />
-                <span class="text-sm font-bold text-neutral-title group-hover:text-red-500">退出登录</span>
-              </div>
-            </div>
-          </Transition>
-        </div>
-
         <button 
-          @click="isLoggedIn ? navigateTo('/interview') : (showLoginModal = true)"
+          @click="navigateTo('/interview')"
           class="px-6 py-2 rounded-full font-bold text-sm transition-all transform active:scale-95 bg-neutral-title text-[#FFC585] hover:scale-105 shadow-lg"
         >
           立即体验
@@ -336,63 +291,11 @@ const toggleFaq = (index: number) => {
           {{ link.name }}
         </a>
         <button 
-          @click="navigateTo('/profile')"
+          @click="navigateTo('/interview')"
           class="px-12 py-4 bg-primary text-white rounded-full font-bold text-xl shadow-xl shadow-primary/20"
         >
           立即体验
         </button>
-      </div>
-    </Transition>
-
-    <!-- 登录弹窗 -->
-    <Transition name="fade">
-      <div v-if="showLoginModal" class="fixed inset-0 z-[200] flex items-center justify-center p-6">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showLoginModal = false"></div>
-        <div 
-          class="relative p-1 rounded-[40px] shadow-2xl w-full max-w-md animate-in zoom-in duration-300 overflow-hidden"
-          style="background: linear-gradient(135deg, #95E0E1 0%, #FFEAC2 100%);"
-        >
-          <div class="bg-white rounded-[38px] p-10 space-y-8 text-center relative z-10">
-            <button @click="showLoginModal = false" class="absolute top-6 right-6 p-2 hover:bg-neutral-bg rounded-full transition-colors text-neutral-helper">
-              <X :size="20" />
-            </button>
-            
-            <div class="space-y-3">
-              <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto text-primary">
-                <Bot :size="32" />
-              </div>
-              <h3 class="text-2xl font-black text-neutral-title">欢迎开启智能面试</h3>
-              <p class="text-sm text-neutral-body">登录后解锁 50+ 岗位模拟与 AI 报告</p>
-            </div>
-
-            <div class="space-y-4">
-              <div class="space-y-2 text-left">
-                <label class="text-xs font-bold text-neutral-helper uppercase tracking-wider ml-1">手机号 / 邮箱</label>
-                <input type="text" placeholder="请输入您的账号" class="w-full px-6 py-4 bg-neutral-bg rounded-2xl border-2 border-transparent focus:border-primary/20 outline-none transition-all font-medium" />
-              </div>
-              <div class="space-y-2 text-left">
-                <label class="text-xs font-bold text-neutral-helper uppercase tracking-wider ml-1">密码</label>
-                <input type="password" placeholder="请输入您的密码" class="w-full px-6 py-4 bg-neutral-bg rounded-2xl border-2 border-transparent focus:border-primary/20 outline-none transition-all font-medium" />
-              </div>
-            </div>
-
-            <button 
-              @click="handleLogin"
-              class="w-full py-4 bg-neutral-title text-[#FFC585] font-black rounded-2xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              立即登录
-            </button>
-
-            <div class="flex items-center justify-between text-xs text-neutral-helper font-bold px-2">
-              <span class="hover:text-primary cursor-pointer">忘记密码？</span>
-              <span class="hover:text-primary cursor-pointer">注册新账号</span>
-            </div>
-          </div>
-          <!-- 装饰元素 -->
-          <div class="absolute -right-12 -bottom-12 opacity-10 text-primary">
-            <Bot :size="200" />
-          </div>
-        </div>
       </div>
     </Transition>
 
@@ -402,33 +305,23 @@ const toggleFaq = (index: number) => {
         <div class="space-y-8 animate-in slide-in-from-left-12 duration-1000">
           <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-full border border-primary/10">
             <Sparkles :size="16" class="text-primary" />
-            <span class="text-xs font-bold text-primary tracking-widest uppercase">AI 驱动面试革命</span>
+            <span class="text-xs font-bold text-primary tracking-widest uppercase">免登录演示</span>
           </div>
           <h1 class="text-5xl md:text-7xl font-black leading-tight tracking-tight text-neutral-title">
             AI 驱动的<br/>
             <span class="text-primary italic">智能面试平台</span>
           </h1>
           <p class="text-lg text-neutral-body max-w-lg leading-relaxed">
-            基于多模态大语言模型，深度还原真实面试场景。为每一位求职者提供“没人练、没反馈、没方向”的全链条解决方案。
+            免登录体验面试练习、游戏关卡、岗位匹配和题库。问答、评分和报告使用示例数据。
           </p>
           <div class="flex items-center gap-4">
             <button 
               @click="navigateTo('/interview')"
               class="px-8 py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
             >
-              深入了解
+              进入功能演示
               <ArrowRight :size="20" />
             </button>
-            <div class="flex items-center gap-2 ml-4">
-              <div class="flex -space-x-3">
-                <div v-for="i in 3" :key="i" class="w-10 h-10 rounded-full border-2 border-white bg-neutral-bg overflow-hidden">
-                  <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`" alt="user" />
-                </div>
-              </div>
-              <p class="text-xs text-neutral-helper font-medium ml-2">
-                已有 <span class="text-primary font-bold">12k+</span> 同学成功入职
-              </p>
-            </div>
           </div>
         </div>
 
@@ -615,7 +508,7 @@ const toggleFaq = (index: number) => {
               <p class="leading-relaxed" style="color: rgba(30, 41, 59, 0.8);">
                 全流程 AI 模拟面试，从自我介绍到项目深挖，从技术拷问到综合素质评估。我们提供 7x24 小时在线面试官，随时随地开启练习，无需等待。
               </p>
-              <button class="px-8 py-3 font-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-xl" style="background: #1E293B; color: #FFFFFF;">
+              <button @click="navigateTo('/interview')" class="px-8 py-3 font-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-xl" style="background: #1E293B; color: #FFFFFF;">
                 立即开始练习
               </button>
             </div>

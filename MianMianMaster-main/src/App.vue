@@ -125,6 +125,7 @@ const navigateTo = (path: string) => {
         </div>
 
         <div class="flex items-center gap-2 md:gap-4">
+          <span class="text-xs font-medium text-neutral-helper whitespace-nowrap">演示数据</span>
           <button class="p-2 text-neutral-helper hover:bg-neutral-bg rounded-full relative">
             <Bell :size="20" />
             <span class="absolute top-1 right-1 w-2 h-2 bg-auxiliary-orange rounded-full border-2 border-white"></span>

@@ -236,10 +236,6 @@ const isCategoryExpanded = ref<boolean>(false)
 import { useRouter } from 'vue-router'
 const router = useRouter()
 
-// 专项通关路径相关状态
-const practiceProgress = ref(0)
-const isPracticeStarted = ref(false)
-
 // 交互方法
 const toggleCategory = (categoryId: number) => {
   if (selectedCategory.value === categoryId) {

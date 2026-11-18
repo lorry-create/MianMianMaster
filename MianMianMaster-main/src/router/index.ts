@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import Home from "../views/Home.vue";
 import Interview from "../views/Interview.vue";
 import Profile from "../views/Profile.vue";
@@ -13,9 +13,9 @@ import Report from "../views/Report.vue";
 import JobSpecificQuestionBank from "../views/JobSpecificQuestionBank.vue";
 import Practice from "../views/Practice.vue";
 import PathPractice from "../views/PathPractice.vue";
-import { useUserStore } from "../stores/user";
 
 const routes = [
+  { path: "/login", redirect: "/interview" },
   {
     path: "/",
     name: "Home",
@@ -103,20 +103,11 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes,
 });
 
-router.beforeEach((to, _from, next) => {
-  const userStore = useUserStore();
-  
-  const requiresAuth = to.meta.requiresAuth || false;
-
-  if (requiresAuth && !userStore.isLoggedIn) {
-    next("/login");
-  } else {
-    document.title = `${to.meta.title} | 面面俱到`;
-    next();
-  }
+router.beforeEach((to) => {
+  document.title = `${to.meta.title || "演示"} | 面面俱到`;
 });
 export default router;

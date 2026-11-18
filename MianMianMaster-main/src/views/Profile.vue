@@ -2801,7 +2801,7 @@ const handleResize = () => {
                     class="flex items-start gap-3 p-3 bg-white rounded-xl border border-neutral-border"
                   >
                     <div class="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
-                      {{ index + 1 }}
+                      {{ Number(index) + 1 }}
                     </div>
                     <p class="text-xs text-neutral-body leading-relaxed">{{ suggestion }}</p>
                   </div>

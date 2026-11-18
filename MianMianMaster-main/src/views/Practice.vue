@@ -4,11 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { 
   ChevronLeft, 
   Zap, 
-  BookOpen, 
   Clock, 
   Target, 
   CheckCircle, 
-  XCircle,
   ArrowRight
 } from 'lucide-vue-next'
 
@@ -136,11 +134,16 @@ const questionBanks = {
 }
 
 // 根据路由参数获取题库数据
-const practiceData = ref(questionBanks[Number(route.params.id)] || questionBanks[1])
+function getQuestionBank(id: unknown) {
+  const bankId = Number(id)
+  return bankId === 2 || bankId === 3 ? questionBanks[bankId] : questionBanks[1]
+}
+
+const practiceData = ref(getQuestionBank(route.params.id))
 
 // 监听路由参数变化，更新题库数据
 watch(() => route.params.id, (newId) => {
-  practiceData.value = questionBanks[Number(newId)] || questionBanks[1]
+  practiceData.value = getQuestionBank(newId)
   // 重置练习状态
   currentQuestionIndex.value = 0
   selectedAnswers.value = {}
@@ -180,12 +183,8 @@ const previousQuestion = () => {
 }
 
 const handleAnswerSelect = (optionId: string) => {
-  selectedAnswers.value[currentQuestion.value.id] = optionId
-}
-
-const handleEssayAnswer = (event: Event) => {
-  const target = event.target as HTMLTextAreaElement
-  selectedAnswers.value[currentQuestion.value.id] = target.value
+  const question = currentQuestion.value
+  if (question) selectedAnswers.value[question.id] = optionId
 }
 
 const restartPractice = () => {
@@ -272,7 +271,7 @@ onMounted(() => {
         </div>
 
         <!-- 题目页面 -->
-        <div v-else class="space-y-4">
+        <div v-else-if="currentQuestion" class="space-y-4">
           <!-- 题目信息 -->
           <div class="bg-white rounded-[32px] p-6 shadow-sm border border-neutral-border">
             <div class="flex items-center gap-3 mb-4">
@@ -307,7 +306,6 @@ onMounted(() => {
             <div v-else-if="currentQuestion.type === 'essay'" class="mt-6">
               <textarea 
                 v-model="selectedAnswers[currentQuestion.id]"
-                @input="handleEssayAnswer"
                 class="w-full p-4 bg-neutral-bg rounded-xl border border-neutral-border focus:border-primary focus:outline-none transition-all"
                 rows="5"
                 placeholder="请输入你的答案..."

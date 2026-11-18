@@ -432,6 +432,9 @@ const isAnalyzingResume = ref(false)
 const resumeAnalysisResult = ref('')
 const selectedJob = ref('')
 const cameraReady = ref(false)
+const devicePending = ref(false)
+const deviceError = ref('')
+let pageActive = true
 const micReady = ref(false)
 
 let timer: number
@@ -444,12 +447,19 @@ let animationFrame: number
 
 const startInterviewProcess = () => {
   currentStep.value = 'prepare'
-  initDevices()
 }
 
 const initDevices = async () => {
+  if (devicePending.value || mediaStream) return
+  devicePending.value = true
+  deviceError.value = ''
   try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    if (!pageActive) {
+      stream.getTracks().forEach((track) => track.stop())
+      return
+    }
+    mediaStream = stream
     if (videoRef.value) {
       videoRef.value.srcObject = mediaStream
     }
@@ -457,7 +467,10 @@ const initDevices = async () => {
     micReady.value = true
     initAudioMeter(mediaStream)
   } catch (err) {
+    deviceError.value = '无法启用摄像头或麦克风。你仍可进行文字练习。'
     console.error('Error accessing media devices:', err)
+  } finally {
+    devicePending.value = false
   }
 }
 
@@ -492,7 +505,7 @@ const analyzeResume = () => {
   isAnalyzingResume.value = true
   setTimeout(() => {
     isAnalyzingResume.value = false
-    resumeAnalysisResult.value = '根据您的简历，您在 Vue.js 和 TypeScript 方面有深厚背景，适合高级前端开发工程师岗位。'
+    resumeAnalysisResult.value = '示例建议：在项目经历中补充 Vue.js 和 TypeScript 的使用场景、个人贡献及可量化结果。'
   }, 2000)
 }
 
@@ -507,6 +520,7 @@ const startTimers = () => {
 }
 
 onUnmounted(() => {
+  pageActive = false
   clearInterval(timer)
   clearInterval(interviewTimer)
   if (mediaStream) {
@@ -2493,14 +2507,14 @@ const closePressureScenarioDetails = () => {
         </div>
       </Transition>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-3xl border border-neutral-border p-12 shadow-sm flex flex-col items-center text-center" style="width: 1280px;">
+      <div>
+        <div class="bg-white rounded-3xl border border-neutral-border p-6 sm:p-12 shadow-sm flex flex-col items-center text-center">
           <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-6">
             <Briefcase :size="40" />
           </div>
           <h2 class="text-2xl font-bold text-neutral-title mb-4">准备好开始你的挑战了吗？</h2>
           <p class="text-neutral-helper mb-8 max-w-md">
-            我们将引导您完成设备测试、简历上传及岗位选择，确保面试环境达到最佳状态。
+            选择岗位即可开始文字练习。摄像头、麦克风和简历均可跳过。
           </p>
           <button 
             @click="startInterviewProcess"
@@ -2523,6 +2537,10 @@ const closePressureScenarioDetails = () => {
             <Settings :size="24" class="text-primary" />
             面试环境预备
           </h3>
+          <button type="button" :disabled="devicePending || cameraReady" class="mb-4 px-4 py-2 rounded-xl bg-neutral-bg font-bold disabled:opacity-60" @click="initDevices">
+            {{ devicePending ? '等待设备权限…' : cameraReady ? '设备已启用' : '测试摄像头和麦克风（可选）' }}
+          </button>
+          <p v-if="deviceError" class="mb-4 text-sm text-neutral-body" role="status">{{ deviceError }}</p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Camera Test -->
@@ -2539,7 +2557,7 @@ const closePressureScenarioDetails = () => {
               <div class="aspect-video bg-neutral-bg rounded-2xl border-2 border-dashed border-neutral-border overflow-hidden relative group">
                 <video ref="videoRef" autoplay playsinline muted class="w-full h-full object-cover"></video>
                 <div v-if="!cameraReady" class="absolute inset-0 flex items-center justify-center text-neutral-helper">
-                  正在请求摄像头权限...
+                  摄像头未启用
                 </div>
               </div>
             </div>
@@ -2585,7 +2603,7 @@ const closePressureScenarioDetails = () => {
           <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-bold text-neutral-title flex items-center gap-2">
               <FileUp :size="20" class="text-primary" />
-              简历 AI 分析
+              简历分析示例
             </h3>
             <span v-if="resumeFile" class="text-xs text-primary font-bold">{{ resumeFile.name }}</span>
           </div>
@@ -2599,23 +2617,23 @@ const closePressureScenarioDetails = () => {
               <div class="w-12 h-12 bg-neutral-bg rounded-full flex items-center justify-center text-neutral-helper group-hover:text-primary group-hover:bg-primary/10 transition-all">
                 <FileUp :size="24" />
               </div>
-              <p class="text-sm font-bold text-neutral-title">点击或拖拽上传简历</p>
-              <p class="text-xs text-neutral-helper">支持 PDF, DOCX (最大 10MB)</p>
+              <p class="text-sm font-bold text-neutral-title">选择本地简历（可选）</p>
+              <p class="text-xs text-neutral-helper">支持 PDF、DOC、DOCX，文件仅在当前设备使用</p>
             </div>
 
             <div class="bg-neutral-bg rounded-2xl p-6 relative overflow-hidden">
               <div v-if="isAnalyzingResume" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-10">
                 <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-xs font-bold text-primary animate-pulse">AI 正在深度解析简历内容...</p>
+                <p class="text-xs font-bold text-primary animate-pulse">正在加载示例分析…</p>
               </div>
               <div v-if="resumeAnalysisResult" class="space-y-3">
                 <p class="text-xs font-bold text-primary flex items-center gap-1 uppercase">
-                  <FileSearch :size="14" /> AI 分析结果
+                  <FileSearch :size="14" /> 示例分析结果
                 </p>
                 <p class="text-sm text-neutral-body leading-relaxed">{{ resumeAnalysisResult }}</p>
               </div>
               <div v-else class="h-full flex items-center justify-center text-center px-4">
-                <p class="text-xs text-neutral-helper italic">上传简历后，AI 将自动分析您的优势并定制面试题目</p>
+                <p class="text-xs text-neutral-helper italic">选择文件后可查看示例分析，也可以直接开始练习。</p>
               </div>
             </div>
           </div>
@@ -2628,9 +2646,9 @@ const closePressureScenarioDetails = () => {
           <h4 class="font-bold text-neutral-title mb-6">面试准备清单</h4>
           <div class="space-y-4 mb-8">
             <div v-for="item in [
-              { label: '摄像头状态', ready: cameraReady },
-              { label: '麦克风状态', ready: micReady },
-              { label: '简历已上传', ready: !!resumeFile },
+              { label: '摄像头（可选）', ready: cameraReady },
+              { label: '麦克风（可选）', ready: micReady },
+              { label: '本地简历（可选）', ready: !!resumeFile },
               { label: '岗位已选择', ready: !!selectedJob }
             ]" :key="item.label" class="flex items-center justify-between p-4 rounded-2xl bg-neutral-bg transition-all">
               <span class="text-sm font-medium text-neutral-body">{{ item.label }}</span>
@@ -2642,14 +2660,14 @@ const closePressureScenarioDetails = () => {
 
           <button 
             @click="startRealInterview"
-            :disabled="!cameraReady || !micReady || !resumeFile || !selectedJob"
+            :disabled="!selectedJob"
             class="w-full py-5 gradient-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed hover:scale-[1.02] active:scale-95"
           >
-            开始正式面试 <ChevronRight :size="20" />
+            开始面试练习 <ChevronRight :size="20" />
           </button>
           
           <p class="mt-4 text-[10px] text-neutral-helper text-center leading-relaxed">
-            点击“开始面试”即代表您同意 AI 实时捕捉音视频画面用于面试评估，数据将在会话结束后自动加密。
+            本次练习使用内置题目和示例评分。
           </p>
         </div>
       </div>
