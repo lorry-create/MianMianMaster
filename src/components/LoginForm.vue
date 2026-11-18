@@ -28,6 +28,7 @@ interface FieldErrors {
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^1[3-9]\d{9}$/;
+const isFrontendPreview = import.meta.env.VITE_FRONTEND_PREVIEW === "true";
 
 const userStore = useUserStore();
 const { loading } = storeToRefs(userStore);
@@ -213,11 +214,24 @@ async function handleSubmit(): Promise<void> {
         >
           <Bot :size="32" />
         </div>
-        <h3 class="text-2xl font-black text-neutral-title">{{ titleText }}</h3>
-        <p class="text-sm text-neutral-body">{{ subtitleText }}</p>
+        <h3 class="text-2xl font-black text-neutral-title">
+          {{ isFrontendPreview ? "当前为前端展示版" : titleText }}
+        </h3>
+        <p v-if="isFrontendPreview" class="text-sm text-neutral-body">
+          登录、注册和 AI 面试暂未开放，你可以继续浏览公开页面。
+        </p>
+        <p v-else class="text-sm text-neutral-body">{{ subtitleText }}</p>
       </div>
 
-      <form class="space-y-3" novalidate @submit.prevent="handleSubmit">
+      <button
+        v-if="isFrontendPreview"
+        type="button"
+        class="w-full py-4 bg-neutral-title text-[#FFC585] font-black rounded-2xl"
+        @click="emit('cancel')"
+      >
+        继续浏览
+      </button>
+      <form v-else class="space-y-3" novalidate @submit.prevent="handleSubmit">
         <!-- 用户名 -->
         <div class="space-y-1.5 text-left">
           <label
@@ -385,7 +399,7 @@ async function handleSubmit(): Promise<void> {
         </button>
       </form>
 
-      <div class="pt-1 text-sm text-neutral-helper font-medium">
+      <div v-if="!isFrontendPreview" class="pt-1 text-sm text-neutral-helper font-medium">
         <button
           type="button"
           class="hover:text-primary transition-colors font-bold"
